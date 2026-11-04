@@ -92,7 +92,11 @@ select.pick{width:100%;min-width:0;height:25px;border:1px solid #d8e0e6;border-r
 #authButton{background:#f6c75e;color:#33290f}
 .request-pending-dot{margin-top:5px;font-size:9px;color:#245d8a;font-weight:750}
 .compact-controls{display:grid;grid-template-columns:1fr;gap:5px}.control-unit{min-width:0}.control-label{display:block;font-size:8px;font-weight:900;letter-spacing:.04em;color:#71808a;margin-bottom:2px}.fixed-marks{display:flex;gap:3px;flex-wrap:wrap}.fixed-mark{width:25px;height:24px;min-width:25px;padding:0;border:1px solid #d8e0e6;border-radius:5px;background:#f1f4f6;color:#566674;font-size:13px;display:flex;align-items:center;justify-content:center;gap:2px}.fixed-mark.yes{background:#d9f2e3;border-color:#b4e4c9;color:#167044}.fixed-mark.no{background:#ffe4e2;border-color:#ffc6c2;color:#a53a35}.fixed-mark.pending{background:#f1f4f6;color:#536572}.mark-index{font-size:8px}.variable-counter{display:flex;align-items:center;justify-content:space-between;gap:4px}.variable-current{font-size:10px;font-weight:850;white-space:nowrap;font-variant-numeric:tabular-nums}.variable-counter .stepper{width:24px;height:23px;min-width:24px;line-height:21px}.youth{padding:5px}.youthname{font-size:10px}.
-.youth.has-request{background:#dceeff!important;border:2px solid #5599d0!important;box-shadow:0 0 0 1px #b7d9f2 inset}
+.youth.has-request{background:#cfe5fb!important;border:2px solid #2f7fc4!important;box-shadow:0 0 0 2px #9cc8ee inset,0 2px 8px #2f7fc440!important}
+.youth.has-request .youthname{color:#14518a!important}
+.youth.has-request select.pick{background-color:#eaf4ff;border-color:#8fbce6}
+.youth.has-request .stepper,.youth.has-request .fixed-mark.pending{background:#e3f0fd;border-color:#8fbce6}
+.youth.has-request .control-label,.youth.has-request .picklabel{color:#3a6f9e}
 .request-inline{margin-top:5px;padding:5px 6px;border-radius:6px;background:#dceeff;border:1px solid #9fc7e8;color:#174b75;font-size:9px;line-height:1.3;white-space:pre-wrap;overflow-wrap:anywhere}
 .request-inline strong{display:block;font-size:9px;margin-bottom:2px}
 .request-review-actions{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
@@ -118,6 +122,37 @@ body:not(.editor) .editor-only{display:none!important}
 .variable-current{font-size:11px}
 .var-head{font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:900;color:#697985;line-height:1.3;padding-bottom:3px;margin-bottom:4px;border-bottom:1px solid #d5dde3}
 .var-head .var-need{color:#183348;background:var(--softbg,#e9eef2);border-radius:4px;padding:1px 5px;font-size:11px;white-space:nowrap}
+.fbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:7px;background:#e7edf2;color:#41586a;cursor:pointer;flex:0 0 auto;border:0}
+.fbtn svg{width:15px;height:15px;pointer-events:none}
+.summary .fbtn select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:14px;padding:0;border:0}
+.fbtn.active{background:#193348;color:#fff}
+.fbtn-req{background:#dbeafe;color:#1d5fa8}.fbtn-req.active{background:#1d5fa8;color:#fff}
+.fbadge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#1d5fa8;color:#fff;font-size:9px;font-weight:900;display:grid;place-items:center;box-shadow:0 0 0 2px #f3f6f8}
+.fbtn-req.active .fbadge{background:#fff;color:#1d5fa8}.fbadge[hidden]{display:none}
+#balance{margin:18px 0 24px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.bal-head{padding:13px 15px;background:#f8fafb;border-bottom:1px solid var(--line)}
+.bal-title{font-size:17px;font-weight:900;color:#183348}.bal-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45;max-width:760px}
+.bal-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;padding:14px 15px 4px}
+.bal-kpi{border:1px solid var(--line);border-top:3px solid var(--c);border-radius:10px;padding:10px 12px;background:#fff}
+.bal-kpi span{display:block;font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#697985;margin-bottom:3px}
+.bal-kpi b{display:block;font-size:26px;line-height:1.05;font-weight:900;color:#183348}.bal-kpi b em{font-size:13px;font-style:normal;font-weight:700;color:#7a8994}
+.bal-kpi small{display:block;font-size:11px;color:var(--muted);margin-top:4px}
+.bal-bar{height:5px;border-radius:3px;background:#e7edf2;margin-top:7px;overflow:hidden}.bal-bar i{display:block;height:100%;background:var(--c)}
+.bal-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;padding:12px 15px 16px}
+.bal-col h3{margin:0 0 6px;font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#4b5d6a;display:flex;gap:8px;align-items:center}
+.bal-col h3 em{margin-left:auto;font-style:normal;text-transform:none;letter-spacing:0;font-weight:700;color:#7a8994}
+.bal-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin:0 3px 0 6px}
+.bal-row,.bal-rank{display:grid;grid-template-columns:minmax(70px,120px) 1fr auto;gap:8px;align-items:center;padding:3px 0;font-size:11px}
+.bal-rank{grid-template-columns:minmax(90px,1.3fr) 1fr auto}
+.bal-name,.bal-rname{font-weight:750;color:#27394a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bal-track,.bal-rtrack{height:10px;border-radius:5px;background:#eef2f5;overflow:hidden;display:flex}
+.bal-track i,.bal-rtrack i{display:block;height:100%}
+.b-sp{background:#2a9d8f}.b-bd{background:#e9a820}
+.bal-val,.bal-rval{font-weight:800;color:#41586a;font-variant-numeric:tabular-nums;white-space:nowrap}.bal-val small{color:#7a8994;font-weight:600}
+.bal-none{font-size:11px;color:#7a8994;padding:4px 0}
+.bal-divider{margin:4px 15px 0;padding:12px 0 0;border-top:1px solid var(--line);font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#183348}
+.bal-sub-h{margin:12px 0 4px;font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#7a8994}
+
 .var-rule{margin-top:5px;font-size:10px;line-height:1.3;color:#2f4656}.var-rule b{font-weight:900;letter-spacing:.01em}
 .blocks{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr))!important;justify-content:stretch!important;align-items:stretch;gap:9px!important;padding:9px!important}
 .block{width:100%;max-width:none;min-width:0;justify-self:start;display:flex;flex-direction:column}
@@ -185,9 +220,9 @@ body:not(.editor) .editor-only{display:none!important}
   <span class="progress"><i id="overallbar"></i></span>
   <input id="search" type="text" placeholder="Filtrar blocos…" aria-label="Filtrar blocos">
   <select id="youthFilter" aria-label="Filtrar jovem"><option value="all">Todos os jovens</option></select>
-  <select id="itemBlock" aria-label="Bloco para verificar marcações"><option value="all">Ver marcações: todos os blocos</option></select>
-  <select id="itemType" aria-label="Tipo de item"><option value="any">Qualquer item</option><option value="fixed">Atividade fixa</option><option value="variable">Variáveis</option><option value="specialty">Especialidade</option><option value="badge">Insígnia</option></select>
-  <select id="markFilter" aria-label="Filtrar por marcação"><option value="all">Todos os status</option><option value="marked">Somente com item marcado</option><option value="unmarked">Somente sem item marcado</option></select>
+  <label class="fbtn" title="Filtrar por bloco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg><select id="itemBlock" aria-label="Bloco para verificar marcações"><option value="all">Ver marcações: todos os blocos</option></select></label>
+  <label class="fbtn" title="Filtrar por tipo de item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg><select id="itemType" aria-label="Tipo de item"><option value="any">Qualquer item</option><option value="fixed">Atividade fixa</option><option value="variable">Variáveis</option><option value="specialty">Especialidade</option><option value="badge">Insígnia</option></select></label>
+  <label class="fbtn" title="Filtrar por status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg><select id="markFilter" aria-label="Filtrar por marcação"><option value="all">Todos os status</option><option value="marked">Somente com item marcado</option><option value="unmarked">Somente sem item marcado</option></select></label><button type="button" class="fbtn fbtn-req" id="reqFilter" title="Solicitações em aberto" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg><span class="fbadge" id="reqBadge" hidden>0</span></button>
   <button class="light" id="clearFilters" type="button">Limpar filtros</button>
   <span class="legend">Ao escolher um filtro de item, o painel lista cada requisito individual por jovem e bloco.</span>
  </div>
@@ -200,6 +235,7 @@ body:not(.editor) .editor-only{display:none!important}
  <div id="board"></div>
  <div id="empty" class="empty hidden">Nenhum bloco encontrado.</div>
  <section id="progression" aria-labelledby="progressionTitle"></section>
+  <section id="balance" aria-labelledby="balanceTitle"></section>
   <section id="stats" aria-labelledby="statsTitle"></section>
 </main>
 
@@ -333,7 +369,11 @@ function removeYouth(name){
  persistRoster();populateYouthFilter(youthFilter.value);save();render();
 }
 
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}updateSummary()}
+let histLast=null;const undoStack=[],redoStack=[];
+function snap(){return JSON.stringify({state,requests,YOUTHS,approved:[...justApproved]})}
+function resetHistory(){undoStack.length=0;redoStack.length=0;histLast=snap()}
+function recordHistory(){const cur=snap();if(!canEdit||histLast===null){histLast=cur;undoStack.length=0;redoStack.length=0;return}if(cur!==histLast){undoStack.push(histLast);if(undoStack.length>100)undoStack.shift();redoStack.length=0;histLast=cur}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}recordHistory();updateSummary()}
 let canEdit=false, requests=[];const justApproved=new Set();
 try{requests=JSON.parse(localStorage.getItem("mapa-senior-requests-import-v8")||"[]")}catch(e){requests=[]}
 let activeRequest=null, activeContext=null;
@@ -345,7 +385,12 @@ function askDeleteRequest(id,y){const r=requests.find(x=>x.id===id);if(!r)return
 document.getElementById("confirmDeleteYes").addEventListener("click",()=>{const t=deleteTarget;deleteTarget=null;closeModal("confirmDeleteModal");if(!t||!canEdit)return;requests=requests.filter(r=>r.id!==t.id);justApproved.delete(t.id);saveRequests();openConsultation(t.y);render()});
 document.getElementById("confirmDeleteNo").addEventListener("click",()=>{deleteTarget=null;closeModal("confirmDeleteModal")});
 function openYouthActions(y,b){const list=requests.filter(r=>r.youth===y).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));document.getElementById("consultContext").textContent=y;document.getElementById("consultHistory").innerHTML=(list.length?list.map(r=>{const st={pending:"Aguardando validação",question:"Aguardando esclarecimento",approved:"Aprovada",rejected:"Recusada"}[r.status]||r.status;return `<article class="approved-entry"><strong>${esc(r.itemLabel||"Solicitação")} · ${esc(st)}</strong>${esc(r.explanation||"")}${r.response?`<div><b>Resposta:</b> ${esc(r.response)}</div>`:""}<small>${new Date(r.createdAt||Date.now()).toLocaleString("pt-BR")}</small></article>`}).join(""):'<p>Você ainda não enviou solicitações para este jovem.</p>')+`<div class="modal-actions"><button type="button" id="historySuggest">＋ Sugerir alteração</button></div>`;showModal("consultModal");document.getElementById("historySuggest").addEventListener("click",()=>{closeModal("consultModal");startSuggestion(y,b)})}
-function saveRequests(){try{localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests))}catch(e){}}
+function saveRequests(){try{localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests))}catch(e){}recordHistory()}
+function undoToast(msg){let t=document.getElementById("undoToast");if(!t){t=document.createElement("div");t.id="undoToast";t.style.cssText="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#193348;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:750;box-shadow:0 4px 14px #0004;z-index:9999;transition:opacity .25s;pointer-events:none";document.body.appendChild(t)}t.textContent=msg;t.style.opacity="1";clearTimeout(t._h);t._h=setTimeout(()=>{t.style.opacity="0"},1400)}
+function applySnap(str){const o=JSON.parse(str);state=o.state;requests=o.requests;YOUTHS=o.YOUTHS;justApproved.clear();(o.approved||[]).forEach(id=>justApproved.add(id));try{localStorage.setItem(KEY,JSON.stringify(state));localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests))}catch(e){}persistRoster();populateYouthFilter(youthFilter.value);histLast=str;render()}
+function undoEdit(){if(!canEdit)return;if(!undoStack.length){undoToast("Nada para desfazer");return}redoStack.push(histLast);applySnap(undoStack.pop());undoToast("↶ Edição desfeita")}
+function redoEdit(){if(!canEdit)return;if(!redoStack.length){undoToast("Nada para refazer");return}undoStack.push(histLast);applySnap(redoStack.pop());undoToast("↷ Edição refeita")}
+document.addEventListener("keydown",e=>{if(!canEdit||!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=(e.key||"").toLowerCase();if(k!=="z"&&k!=="y")return;const t=e.target;if(t&&(t.tagName==="TEXTAREA"||t.isContentEditable||(t.tagName==="INPUT"&&!["checkbox","button","radio"].includes(t.type))))return;e.preventDefault();if(k==="y"||e.shiftKey)redoEdit();else undoEdit()});
 function showModal(id){document.getElementById(id).classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 function startSuggestion(y,b){activeContext={y,b};document.getElementById("itemChoiceContext").textContent=`${y} · ${b.name}`;const sel=document.getElementById("itemChoiceSelect");sel.innerHTML="";const opts=[];fixedItems(b).forEach((x,i)=>opts.push({value:`fixed:${i}`,label:`Atividade fixa ${i+1}`}));variableItems(b).forEach((x,i)=>opts.push({value:`variable:${i}`,label:`Atividade variável ${i+1}`}));(b.specialties||[]).forEach(x=>opts.push({value:`specialty:${x}`,label:`Especialidade: ${x}`}));(b.badges||[]).forEach(x=>opts.push({value:`badge:${x}`,label:`Insígnia: ${x}`}));opts.forEach(o=>{const op=document.createElement("option");op.value=o.value;op.textContent=o.label;sel.appendChild(op)});document.getElementById("itemChoiceMessage").textContent=opts.length?"Escolha o item antes de descrever a solicitação.":"Este bloco não possui itens para solicitar.";showModal("itemChoiceModal")}
@@ -357,8 +402,8 @@ function resetRequestModal(){document.getElementById('requestText').readOnly=fal
 document.getElementById('submitRequest').addEventListener('click',()=>{if(!activeContext)return;const explanation=document.getElementById('requestText').value.trim();if(!explanation){document.getElementById('requestMessage').textContent='Escreva uma breve descrição antes de enviar.';return;}const [type,...rest]=document.getElementById('requestItem').value.split(':');const value=rest.join(':');const labels={fixed:'Atividade fixa',variable:'Atividade variável',specialty:'Especialidade',badge:'Insígnia'};requests.unshift({id:String(Date.now())+Math.random().toString(16).slice(2),youth:activeContext.y,blockId:activeContext.b.id,blockName:activeContext.b.name,itemType:type,itemValue:value,itemLabel:`${labels[type]}${type==='fixed'||type==='variable'?' '+(Number(value)+1):': '+value}`,explanation,status:'pending',response:'',createdAt:new Date().toISOString()});saveRequests();resetRequestModal();render();});
 function updateRequestStatus(status){if(!activeRequest)return;const response=document.getElementById('requestResponse').value.trim();activeRequest.status=status;activeRequest.response=response;const b=BLOCKS.find(x=>x.id===activeRequest.blockId),s=cell(activeRequest.youth,b);if(status==='approved'){justApproved.add(activeRequest.id);if(activeRequest.itemType==='fixed'){s.fixedStates[Number(activeRequest.itemValue)]='sim';s.fixed=s.fixedStates.every(v=>v==='sim')?'sim':'pendente';}else if(activeRequest.itemType==='variable'){const idx=Number(activeRequest.itemValue);while(s.variables.length<=idx)s.variables.push('pendente');s.variables[idx]='sim';s.qty=s.variables.filter(v=>v==='sim').length;}else if(activeRequest.itemType==='specialty'){s.specialty=activeRequest.itemValue;}else if(activeRequest.itemType==='badge'){s.badge=activeRequest.itemValue;}save();}saveRequests();resetRequestModal();render();}
 document.getElementById('approveRequest').addEventListener('click',()=>updateRequestStatus('approved'));document.getElementById('rejectRequest').addEventListener('click',()=>updateRequestStatus('rejected'));document.getElementById('questionRequest').addEventListener('click',()=>updateRequestStatus('question'));
-document.getElementById('authButton').addEventListener('click',()=>{if(canEdit){canEdit=false;justApproved.clear();document.body.classList.remove('editor');document.getElementById('authButton').textContent='Entrar para editar';document.getElementById('rosterManager').classList.add('hidden');const mb=document.getElementById('manageYouthToggle');mb.setAttribute('aria-expanded','false');mb.textContent='Gerenciar jovens';render();}else{document.getElementById('authMessage').textContent='';document.getElementById('editPassword').value='';showModal('authPanel')}});
-document.getElementById('unlockEditing').addEventListener('click',()=>{if(document.getElementById('editPassword').value==='Ywy43'){canEdit=true;document.body.classList.add('editor');document.getElementById('authButton').textContent='Sair da edição';closeModal('authPanel');render();}else document.getElementById('authMessage').textContent='Senha incorreta.'});
+document.getElementById('authButton').addEventListener('click',()=>{if(canEdit){canEdit=false;undoStack.length=0;redoStack.length=0;justApproved.clear();document.body.classList.remove('editor');document.getElementById('authButton').textContent='Entrar para editar';document.getElementById('rosterManager').classList.add('hidden');const mb=document.getElementById('manageYouthToggle');mb.setAttribute('aria-expanded','false');mb.textContent='Gerenciar jovens';render();}else{document.getElementById('authMessage').textContent='';document.getElementById('editPassword').value='';showModal('authPanel')}});
+document.getElementById('unlockEditing').addEventListener('click',()=>{if(document.getElementById('editPassword').value==='Ywy43'){canEdit=true;resetHistory();document.body.classList.add('editor');document.getElementById('authButton').textContent='Sair da edição';closeModal('authPanel');render();}else document.getElementById('authMessage').textContent='Senha incorreta.'});
 document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.close==='auth'?'authPanel':btn.dataset.close==='approved'?'approvedModal':btn.dataset.close==='consult'?'consultModal':btn.dataset.close==='itemChoice'?'itemChoiceModal':'requestModal')));
 
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const opens=document.querySelectorAll('.modal-overlay.open');const open=opens[opens.length-1];if(!open)return;e.preventDefault();if(open.id==='requestModal')resetRequestModal();else closeModal(open.id)});
@@ -366,6 +411,16 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const opens=d
 function badgeOptions(b){return b.badges||[]}
 function axisFor(b){return AXES.find(a=>a.name===b.axis)||AXES[0]}
 function detailMode(){return itemBlock.value!=="all"||document.getElementById("itemType").value!=="any"||document.getElementById("markFilter").value!=="all"}
+let onlyOpenRequests=false;
+function openReq(y,b){return requests.some(r=>r.youth===y&&r.blockId===b.id&&(r.status==="pending"||r.status==="question"))}
+function syncFilterButtons(){
+ [itemBlock,document.getElementById("itemType"),document.getElementById("markFilter")].forEach(sel=>{const wrap=sel.parentElement,on=sel.selectedIndex>0;wrap.classList.toggle("active",on);wrap.title=(on?"Filtro ativo: ":"Filtrar: ")+sel.selectedOptions[0].textContent});
+ const open=requests.filter(r=>r.status==="pending"||r.status==="question").length;
+ const rb=document.getElementById("reqFilter"),bd=document.getElementById("reqBadge");
+ rb.classList.toggle("active",onlyOpenRequests);rb.setAttribute("aria-pressed",String(onlyOpenRequests));
+ bd.textContent=open;bd.hidden=!open;
+ rb.title=onlyOpenRequests?"Mostrando só solicitações em aberto (clique para voltar)":`Solicitações em aberto: ${open}`;
+}
 function buildItemRows(){
  const query=document.getElementById("search").value.trim().toLocaleLowerCase("pt-BR");
  const cat="all";
@@ -487,6 +542,8 @@ function renderProgression(){
 }
 
 function render(){
+ if(detailMode())onlyOpenRequests=false;
+ syncFilterButtons();
  renderRosterManager();
  const board=document.getElementById("board"), results=document.getElementById("results");
  board.innerHTML="";
@@ -501,6 +558,7 @@ function render(){
  AXES.forEach(axis=>{
   let list=BLOCKS.filter(b=>b.axis===axis.name&&b.name.toLowerCase().includes(query));
   list=list.filter(b=>cat==="all"||(cat==="fixed"&&b.fixed)||(cat==="variable"&&b.varCount>0)||(cat==="special"&&(b.specialties.length||b.badges.length)));
+  list=list.filter(b=>!onlyOpenRequests||YOUTHS.some(y=>(youthFilter.value==="all"||y===youthFilter.value)&&openReq(y,b)));
   if(!list.length)return;
   let sec=document.createElement("section");sec.className="axis";
   sec.innerHTML=`<div class="axis-title" style="background:${axis.color}"><span class="axis-icon">${axis.icon}</span>${esc(axis.name)} <span style="font-size:11px;font-weight:650;margin-left:auto">${list.length} blocos</span></div><div class="blocks"></div>`;
@@ -512,7 +570,7 @@ function render(){
    let vari="";
    card.innerHTML=`<div class="blockhead"><div class="iconbox"><img class="blockicon" src="${ICON_IMAGES[b.id-1]}" alt="Ícone de ${esc(b.name)}"></div><div><div class="blockname">${esc(b.name)}</div><div class="intention">${esc(b.intention)}</div></div></div>${fixed}${b.varCount?`<div class="req req-var"><div class="var-suggestions"><div class="var-head">SUGESTÕES DE ATIVIDADES VARIÁVEIS ${(()=>{const r=specialRule(b);const has=b.specialties.length||b.badges.length;const op=(!r&&!has)?"":(r&&r.mode==="plus"?"E":"OU");return `<span class="var-need">(${b.varCount})${op?" "+op:""}</span>${op?" ESPECIALIDADE/INSÍGNIA":""}`})()}</div>${esc(b.varText||"")}</div></div>`:""}<div class="youthgrid"></div>`;
    let yg=card.querySelector(".youthgrid");
-   const visibleYouths=youthFilter.value==="all"?YOUTHS:YOUTHS.filter(y=>y===youthFilter.value);
+   const visibleYouths=(youthFilter.value==="all"?YOUTHS:YOUTHS.filter(y=>y===youthFilter.value)).filter(y=>!onlyOpenRequests||openReq(y,b));
    visibleYouths.forEach(y=>{
     let s=cell(y,b),tile=document.createElement("div");tile.className="youth";
     const fixedReqs=fixedItems(b),fixedDone=s.fixedStates.filter(v=>v==="sim").length;
@@ -552,7 +610,7 @@ function render(){
   });
   board.appendChild(sec)
  });
- document.getElementById("empty").classList.toggle("hidden",board.children.length>0);
+ document.getElementById("empty").textContent=onlyOpenRequests?"Nenhuma solicitação em aberto.":"Nenhum bloco encontrado.";document.getElementById("empty").classList.toggle("hidden",board.children.length>0);
  updateSummary()
 }
 
@@ -580,6 +638,24 @@ function renderStats(){
   root.innerHTML=`<div class="stats-head"><div><div class="stats-title" id="statsTitle">Blocos concluídos pela tropa</div><div class="stats-subtitle">Cada segmento da barra representa um jovem; os coloridos já concluíram o bloco. Passe o mouse sobre a linha para ver quem concluiu.</div></div><div class="stats-sort" role="group" aria-label="Ordenar blocos"><button type="button" data-stats-sort="axis" class="${statsSort==="axis"?"on":""}">Por eixo</button><button type="button" data-stats-sort="rank" class="${statsSort==="rank"?"on":""}">Mais concluídos</button></div></div><div class="stats-body">${body}</div>`;
   root.querySelectorAll("[data-stats-sort]").forEach(btn=>btn.addEventListener("click",()=>{statsSort=btn.dataset.statsSort;renderStats();}));
 }
+function renderBalance(){
+ const root=document.getElementById("balance");if(!root)return;
+ const N=YOUTHS.length;
+ const per=YOUTHS.map(y=>{let sp=0,bd=0;BLOCKS.forEach(b=>{const s=cell(y,b);if(s.specialty)sp++;if(s.badge)bd++});return {y,sp,bd,t:sp+bd}}).sort((a,b)=>b.t-a.t||a.y.localeCompare(b.y,"pt-BR"));
+ const totSp=per.reduce((n,p)=>n+p.sp,0),totBd=per.reduce((n,p)=>n+p.bd,0);
+ const withSp=per.filter(p=>p.sp>0).length,withBd=per.filter(p=>p.bd>0).length,withAny=per.filter(p=>p.t>0).length;
+ const fmt=v=>(N?v/N:0).toFixed(1).replace(".",",");
+ const pct=v=>N?Math.round(v/N*100):0;
+ const max=Math.max(1,...per.map(p=>p.t));
+ const tally=kind=>{const m=new Map();YOUTHS.forEach(y=>{const set=new Set();BLOCKS.forEach(b=>{const v=cell(y,b)[kind];if(v)set.add(v)});set.forEach(v=>m.set(v,(m.get(v)||0)+1))});return [...m].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"pt-BR"))};
+ const rank=(list,cls,msg)=>list.length?list.map(([n,c])=>`<div class="bal-rank" title="${esc(n)}: ${c} de ${N} jovens"><span class="bal-rname">${esc(n)}</span><span class="bal-rtrack"><i class="${cls}" style="width:${pct(c)}%"></i></span><span class="bal-rval">${c}/${N}</span></div>`).join(""):`<div class="bal-none">${msg}</div>`;
+ const kpi=(color,label,big,sub,have)=>`<div class="bal-kpi" style="--c:${color}"><span>${label}</span><b>${big}</b><small>${sub}</small><div class="bal-bar"><i style="width:${pct(have)}%"></i></div></div>`;
+ const rows=per.map(p=>`<div class="bal-row" title="${esc(p.y)}: ${p.sp} especialidade(s) e ${p.bd} insígnia(s)"><span class="bal-name">${esc(p.y)}</span><span class="bal-track"><i class="b-sp" style="width:${p.sp/max*100}%"></i><i class="b-bd" style="width:${p.bd/max*100}%"></i></span><span class="bal-val">${p.t}<small> · ${p.sp}E ${p.bd}I</small></span></div>`).join("");
+ root.innerHTML=`<div class="bal-head"><div class="bal-title" id="balanceTitle">Balanço de especialidades e insígnias</div><div class="bal-sub">Quantas especialidades e insígnias já foram escolhidas nos blocos, comparadas ao total de ${N} ${N===1?"jovem":"jovens"} da tropa.</div></div>
+ <div class="bal-kpis">${kpi("#2a9d8f","Especialidades",`${totSp}`,`${withSp}/${N} jovens com ao menos uma · média ${fmt(totSp)} por jovem`,withSp)}${kpi("#e9a820","Insígnias",`${totBd}`,`${withBd}/${N} jovens com ao menos uma · média ${fmt(totBd)} por jovem`,withBd)}${kpi("#4e94d8","Jovens com alguma conquista",`${withAny}<em> / ${N}</em>`,`${pct(withAny)}% da tropa já registrou especialidade ou insígnia`,withAny)}</div>
+ <div class="bal-cols"><div class="bal-col"><h3>Por jovem<em><i class="bal-dot b-sp"></i>Especialidades<i class="bal-dot b-bd"></i>Insígnias</em></h3>${rows||'<div class="bal-none">Nenhum jovem cadastrado.</div>'}</div>
+ <div class="bal-col"><h3>Especialidades escolhidas<em>jovens / ${N}</em></h3>${rank(tally("specialty"),"b-sp","Nenhuma especialidade registrada ainda.")}<h3>Insígnias escolhidas<em>jovens / ${N}</em></h3>${rank(tally("badge"),"b-bd","Nenhuma insígnia registrada ainda.")}</div></div>`;
+}
 function updateSummary(){
   const totalBlocks=YOUTHS.length*BLOCKS.length;
   const doneBlocks=YOUTHS.reduce((n,y)=>n+countCompletedBlocks(y),0);
@@ -590,6 +666,7 @@ function updateSummary(){
   document.getElementById("overallbar").style.width=pct+"%";
   renderProgression();
   renderStats();
+  renderBalance();
 }
 document.getElementById("search").addEventListener("input",render);
 youthFilter.addEventListener("change",render);itemBlock.addEventListener("change",render);document.getElementById("itemType").addEventListener("change",render);document.getElementById("markFilter").addEventListener("change",render);
@@ -602,7 +679,8 @@ document.getElementById("addYouthForm").addEventListener("submit",e=>{e.preventD
 document.getElementById("youthManagerList").addEventListener("change",e=>{const inp=e.target.closest("input[data-edit-youth]");if(inp)renameYouth(inp.dataset.editYouth,inp.value);});
 document.getElementById("youthManagerList").addEventListener("keydown",e=>{const inp=e.target.closest("input[data-edit-youth]");if(inp&&e.key==="Enter"){e.preventDefault();inp.blur();}});
 document.getElementById("youthManagerList").addEventListener("click",e=>{const btn=e.target.closest("button[data-remove-youth]");if(btn)removeYouth(btn.dataset.removeYouth);});
-document.getElementById("clearFilters").addEventListener("click",()=>{document.getElementById("search").value="";youthFilter.value="all";itemBlock.value="all";document.getElementById("itemType").value="any";document.getElementById("markFilter").value="all";render()});
+document.getElementById("clearFilters").addEventListener("click",()=>{document.getElementById("search").value="";youthFilter.value="all";itemBlock.value="all";document.getElementById("itemType").value="any";document.getElementById("markFilter").value="all";onlyOpenRequests=false;render()});
+document.getElementById("reqFilter").addEventListener("click",()=>{onlyOpenRequests=!onlyOpenRequests;if(onlyOpenRequests){itemBlock.value="all";document.getElementById("itemType").value="any";document.getElementById("markFilter").value="all"}render()});
 document.getElementById("groupName").addEventListener("input",()=>{try{localStorage.setItem("mapa-senior-group",document.getElementById("groupName").value)}catch(e){}});
 async function saveFile(name,text,mime){
   try{const dl=(window.claude&&window.claude.use)?await window.claude.use("downloads"):null;if(dl){await dl.save({filename:name,data:text});return;}}catch(e){if(e&&e.code==="declined")return;}
