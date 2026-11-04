@@ -10,7 +10,7 @@
 header{background:#132b40;color:white;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand{font-weight:850;font-size:19px;letter-spacing:-.03em}.subtitle{color:#c7d5df;font-size:12px;margin-top:2px}
 .tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:7px;padding:7px 10px;font-weight:750}.light{background:#e7edf2;color:#193348}.gold{background:#f6c75e;color:#33290f}input[type=text]{border:1px solid #cdd7df;border-radius:7px;padding:7px 9px;min-width:160px}
-main{max-width:1700px;margin:auto;padding:12px}
+main{max-width:none;margin:auto;padding:12px}
 .summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.summary .count{font-weight:800;color:#193348}.summary input{min-width:190px}.legend{margin-left:auto;color:var(--muted);font-size:11px}.progress{height:6px;width:100px;background:#dce5ea;border-radius:9px;overflow:hidden;display:inline-block;vertical-align:middle}.progress i{height:100%;display:block;background:#29966a;width:0}
 .axis{margin:10px 0 15px;border-radius:10px;overflow:hidden;background:var(--axis-pale,#e7edf1)}.axis-title{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px 9px 0 0;color:#14232e;font-weight:900;text-transform:uppercase;letter-spacing:.035em;font-size:16px}
 .axis-title .axis-icon{width:25px;height:25px;display:grid;place-items:center;background:#ffffff9c;border-radius:7px;font-size:17px}
@@ -108,9 +108,20 @@ select.pick{width:100%;min-width:0;height:25px;border:1px solid #d8e0e6;border-r
 body:not(.editor) .editor-only{display:none!important}
 
 /* Layout compacto: cartões mantêm largura e tipografia estáveis; o número de colunas responde ao espaço disponível. */
-.blocks{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),320px))!important;justify-content:start!important;align-items:stretch;gap:9px!important;padding:9px!important}
-.block{width:100%;max-width:320px;min-width:0;justify-self:start;display:flex;flex-direction:column}
-.youthgrid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:start;align-content:start;flex:1 1 auto;gap:5px!important}
+.axis>.blocks{display:flex!important;flex-wrap:wrap;align-items:stretch}
+.axis>.blocks>.block{flex:1 1 min(100%,350px);width:auto;max-width:none;min-width:0}
+.compact-controls{display:flex!important;flex-wrap:wrap;align-items:flex-end;gap:4px 6px}
+.compact-controls .control-unit:first-child{flex:0 0 auto;width:auto}
+.compact-controls .control-unit:last-child{flex:1 1 66px;width:auto;min-width:0}
+.fixed-mark,.variable-counter .stepper{width:22px;min-width:22px;height:22px;font-size:13px}
+.variable-counter{grid-template-columns:22px minmax(0,1fr) 22px;gap:2px}
+.variable-current{font-size:11px}
+.var-head{font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:900;color:#697985;line-height:1.3;padding-bottom:3px;margin-bottom:4px;border-bottom:1px solid #d5dde3}
+.var-head .var-need{color:#183348;background:var(--softbg,#e9eef2);border-radius:4px;padding:1px 5px;font-size:11px;white-space:nowrap}
+.var-rule{margin-top:5px;font-size:10px;line-height:1.3;color:#2f4656}.var-rule b{font-weight:900;letter-spacing:.01em}
+.blocks{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr))!important;justify-content:stretch!important;align-items:stretch;gap:9px!important;padding:9px!important}
+.block{width:100%;max-width:none;min-width:0;justify-self:start;display:flex;flex-direction:column}
+.youthgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(108px,1fr))!important;align-items:start;align-content:start;flex:1 1 auto;gap:5px!important}
 .youth{min-width:0}
 .blockname{overflow-wrap:anywhere}
 .intention,.reqtext{overflow-wrap:anywhere}
@@ -493,13 +504,13 @@ function render(){
   if(!list.length)return;
   let sec=document.createElement("section");sec.className="axis";
   sec.innerHTML=`<div class="axis-title" style="background:${axis.color}"><span class="axis-icon">${axis.icon}</span>${esc(axis.name)} <span style="font-size:11px;font-weight:650;margin-left:auto">${list.length} blocos</span></div><div class="blocks"></div>`;
-  let grid=sec.querySelector(".blocks");grid.style.background=axis.pale;grid.style.setProperty("--axis-pale",axis.pale);sec.style.setProperty("--axis-pale",axis.pale);
+  let grid=sec.querySelector(".blocks");grid.classList.toggle("few-blocks",list.length<=4);grid.style.background=axis.pale;grid.style.setProperty("--axis-pale",axis.pale);sec.style.setProperty("--axis-pale",axis.pale);
   list.forEach(b=>{
    let card=document.createElement("article");card.className="block";card.style.borderTop=`3px solid ${axis.color}`;card.style.setProperty('--iconbg',axis.pale);card.style.setProperty('--softbg',axis.pale+'99');
    let fixed=b.fixed?`<div class="req req-fixed"><div class="reqline"><span class="reqlabel">Fixa</span><div class="reqtext" title="${esc(b.fixed)}">${esc(b.fixed)}</div></div></div>`:"";
    let vars=variableItems(b);
    let vari="";
-   card.innerHTML=`<div class="blockhead"><div class="iconbox"><img class="blockicon" src="${ICON_IMAGES[b.id-1]}" alt="Ícone de ${esc(b.name)}"></div><div><div class="blockname">${esc(b.name)}</div><div class="intention">${esc(b.intention)}</div></div></div>${fixed}${b.varCount?`<div class="req req-var"><div class="var-suggestions"><b>${b.varCount} ATIVIDADES VARIÁVEIS · SUGESTÕES</b><br>${esc(b.varText||"")}</div></div>`:""}<div class="youthgrid"></div><div class="blockfoot"><span>F = fixa · V = variáveis</span><span>${specialRule(b)?(specialRule(b).mode==="plus"?"Variáveis + especialidade/insígnia":"Variáveis OU especialidade/insígnia"):(b.specialties.length||b.badges.length?"Especialidade/insígnia: OU":"")}</span></div>`;
+   card.innerHTML=`<div class="blockhead"><div class="iconbox"><img class="blockicon" src="${ICON_IMAGES[b.id-1]}" alt="Ícone de ${esc(b.name)}"></div><div><div class="blockname">${esc(b.name)}</div><div class="intention">${esc(b.intention)}</div></div></div>${fixed}${b.varCount?`<div class="req req-var"><div class="var-suggestions"><div class="var-head">SUGESTÕES DE ATIVIDADES VARIÁVEIS ${(()=>{const r=specialRule(b);const has=b.specialties.length||b.badges.length;const op=(!r&&!has)?"":(r&&r.mode==="plus"?"E":"OU");return `<span class="var-need">(${b.varCount})${op?" "+op:""}</span>${op?" ESPECIALIDADE/INSÍGNIA":""}`})()}</div>${esc(b.varText||"")}</div></div>`:""}<div class="youthgrid"></div>`;
    let yg=card.querySelector(".youthgrid");
    const visibleYouths=youthFilter.value==="all"?YOUTHS:YOUTHS.filter(y=>y===youthFilter.value);
    visibleYouths.forEach(y=>{
@@ -509,8 +520,7 @@ function render(){
     const totalFixed=fixedReqs.length;
     const markSymbol=v=>v==="sim"?"✓":v==="nao"?"×":"○";
     const fixedControls=totalFixed?`<div class="fixed-marks" aria-label="Atividades fixas">${fixedReqs.map((req,i)=>{const st=s.fixedStates[i]||"pendente";return `<button type="button" class="toggle fixed-mark ${st==="sim"?"yes":st==="nao"?"no":"pending"}" data-fixed-index="${i}" title="${esc(req)}" aria-label="Atividade fixa ${i+1}: ${st}">${markSymbol(st)}${totalFixed>1?`<span class="mark-index">${i+1}</span>`:""}</button>`}).join("")}</div>`:`<span class="qty-suffix">Sem fixa</span>`;
-    tile.innerHTML=`<div class="youthhead"><div class="youthname" title="${esc(y)}">${esc(y)}</div></div><div class="compact-controls"><div class="control-unit"><span class="control-label">FIXA</span>${fixedControls}</div><div class="control-unit"><span class="control-label">VARIÁVEIS</span>${b.varCount?`<div class="variable-counter"><button type="button" class="stepper" data-variable-step="-1" aria-label="Diminuir variáveis" ${variableDone===0?"disabled":""}>−</button><span class="variable-current">${variableDone} de ${b.varCount}</span><button type="button" class="stepper" data-variable-step="1" aria-label="Aumentar variáveis">+</button></div>`:`<span class="qty-suffix">Não se aplica</span>`}</div></div>
-     <div class="needline">${fixedReqs.length?`${fixedDone}/${totalFixed} fixas`:`Sem fixa`} · ${variableDone}/${b.varCount} variáveis mín.</div>
+    tile.innerHTML=`<div class="youthhead"><div class="youthname" title="${esc(y)}">${esc(y)}</div></div><div class="compact-controls"><div class="control-unit"><span class="control-label">FIXA</span>${fixedControls}</div><div class="control-unit"><span class="control-label">VARIÁVEIS</span>${b.varCount?`<div class="variable-counter"><button type="button" class="stepper" data-variable-step="-1" aria-label="Diminuir variáveis" ${variableDone===0?"disabled":""}>−</button><span class="variable-current">${variableDone}/${b.varCount}</span><button type="button" class="stepper" data-variable-step="1" aria-label="Aumentar variáveis">+</button></div>`:`<span class="qty-suffix">Não se aplica</span>`}</div></div>
      ${b.specialties.length?`<div class="picklabel">Especialidade</div><select class="pick" data-field="specialty"><option value="">Selecionar…</option>${b.specialties.map(x=>`<option value="${esc(x)}" ${s.specialty===x?"selected":""}>${esc(x)}</option>`).join("")}</select>`:""}
      ${b.badges.length?`<div class="picklabel">Insígnia</div><select class="pick" data-field="badge"><option value="">Selecionar…</option>${b.badges.map(x=>`<option value="${esc(x)}" ${s.badge===x?"selected":""}>${esc(x)}</option>`).join("")}</select>`:""}
      <div class="request-slot"></div>`;
