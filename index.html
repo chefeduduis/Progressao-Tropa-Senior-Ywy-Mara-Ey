@@ -133,18 +133,41 @@ body:not(.editor) .editor-only{display:none!important}
 .youth.fixed-done{background:#fff7d6;border:1px solid #e3c35a;box-shadow:inset 0 0 0 1px #f6e8a6}
 .youth.fixed-done .youthname{color:#7a5b00}
 .youth.fixed-done .needline{color:#8a6a0a}
+
+/* Estatística por bloco */
+#stats{margin:18px 0 24px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stats-head{padding:13px 15px;background:#f8fafb;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.stats-title{font-size:17px;font-weight:900;color:#183348}
+.stats-subtitle{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45;max-width:720px}
+.stats-sort{display:flex;gap:3px;background:#e7edf2;border-radius:9px;padding:3px}
+.stats-sort button{background:transparent;color:#41586a;padding:5px 11px;font-size:11px;border-radius:7px}
+.stats-sort button.on{background:#fff;color:#14232e;box-shadow:0 1px 3px #1b34452e}
+.stats-body{padding:6px 15px 14px}
+.stats-axis{display:flex;align-items:center;gap:7px;margin:14px 0 4px;font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#4b5d6a}
+.stats-axis i{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0}
+.stats-axis em{margin-left:auto;font-style:normal;font-weight:700;letter-spacing:0;text-transform:none;color:#7a8994}
+.stat-row{display:grid;grid-template-columns:minmax(150px,250px) minmax(0,1fr) 92px;gap:12px;align-items:center;padding:4px 0;border-radius:6px}
+.stat-row:hover{background:#f6f9fb}
+.stat-name{font-size:12px;font-weight:700;color:#22343f;line-height:1.2;display:flex;align-items:center;gap:7px;min-width:0}
+.stat-name .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.stat-track{display:grid;gap:2px;height:15px}
+.stat-track span{border-radius:3px;background:#e8edf1}
+.stat-val{font-size:12px;font-weight:850;font-variant-numeric:tabular-nums;text-align:right;color:#22343f;white-space:nowrap}
+.stat-val small{font-size:10px;font-weight:700;color:#7a8994;margin-left:5px}
+@media(max-width:620px){.stat-row{grid-template-columns:minmax(0,1fr) 84px;gap:3px 8px}.stat-name{grid-column:1/-1}}
+/* Distintivo de etapa: texto reserva cabe na caixa (sem vazar ao lado) */
+.stage-fallback{overflow:hidden;line-height:1;padding:2px;font-size:12px;letter-spacing:.03em}
 </style></head>
 <body>
 <header>
  <div><div class="brand">🧭 Mapa Sênior</div><div class="subtitle">Progressão por bloco · visão coletiva da tropa</div></div>
- <div class="tools"><input id="groupName" type="text" value="Minha Tropa Sênior" aria-label="Nome da tropa"><button class="light" id="manageYouthToggle" type="button" aria-expanded="false">Gerenciar jovens</button><button class="light" id="export">Exportar CSV</button><button class="gold" id="savecopy">Baixar cópia dos dados</button><button id="authButton" type="button">Entrar para editar</button></div>
+ <div class="tools"><input id="groupName" type="text" value="Minha Tropa Sênior" aria-label="Nome da tropa"><button class="light editor-only" id="manageYouthToggle" type="button" aria-expanded="false">Gerenciar jovens</button><button class="light" id="export">Exportar CSV</button><button class="gold" id="savecopy">Baixar cópia dos dados</button><button id="authButton" type="button">Entrar para editar</button></div>
 </header>
 <main>
  <div class="summary">
   <span class="count" id="overall">0/12 jovens · 0 marcações</span>
   <span class="progress"><i id="overallbar"></i></span>
   <input id="search" type="text" placeholder="Filtrar blocos…" aria-label="Filtrar blocos">
-  <select id="category" aria-label="Filtrar categoria"><option value="all">Todos os blocos</option><option value="fixed">Com atividade fixa</option><option value="variable">Com variáveis</option><option value="special">Com especialidade/insígnia</option></select>
   <select id="youthFilter" aria-label="Filtrar jovem"><option value="all">Todos os jovens</option></select>
   <select id="itemBlock" aria-label="Bloco para verificar marcações"><option value="all">Ver marcações: todos os blocos</option></select>
   <select id="itemType" aria-label="Tipo de item"><option value="any">Qualquer item</option><option value="fixed">Atividade fixa</option><option value="variable">Variáveis</option><option value="specialty">Especialidade</option><option value="badge">Insígnia</option></select>
@@ -152,7 +175,7 @@ body:not(.editor) .editor-only{display:none!important}
   <button class="light" id="clearFilters" type="button">Limpar filtros</button>
   <span class="legend">Ao escolher um filtro de item, o painel lista cada requisito individual por jovem e bloco.</span>
  </div>
- <section id="rosterManager" class="roster-manager hidden" aria-label="Gerenciar jovens da tropa">
+ <section id="rosterManager" class="roster-manager editor-only hidden" aria-label="Gerenciar jovens da tropa">
   <div class="roster-head"><div><div class="roster-title">Jovens da tropa</div><div class="roster-help">Edite o nome diretamente na lista, adicione novos jovens ou remova quem não faz mais parte da tropa. As marcações existentes acompanham a edição do nome.</div></div></div>
   <form id="addYouthForm" class="roster-add"><input id="newYouthName" type="text" placeholder="Nome do jovem" aria-label="Nome do novo jovem" maxlength="80" required><button class="add-youth-button" type="submit">+ Adicionar jovem</button></form>
   <div id="youthManagerList" class="roster-list"></div>
@@ -161,6 +184,7 @@ body:not(.editor) .editor-only{display:none!important}
  <div id="board"></div>
  <div id="empty" class="empty hidden">Nenhum bloco encontrado.</div>
  <section id="progression" aria-labelledby="progressionTitle"></section>
+  <section id="stats" aria-labelledby="statsTitle"></section>
 </main>
 
 <div id="authPanel" class="modal-overlay"><div class="modal-card"><button class="modal-close" data-close="auth">×</button><h2>Entrar para editar</h2><p>Digite a senha para liberar as marcações e a revisão de solicitações.</p><input id="editPassword" type="password" placeholder="Senha de edição"><div class="modal-actions"><button id="unlockEditing">Liberar edição</button><button class="reject" data-close="auth">Cancelar</button></div><p id="authMessage"></p></div></div>
@@ -312,16 +336,17 @@ function resetRequestModal(){document.getElementById('requestText').readOnly=fal
 document.getElementById('submitRequest').addEventListener('click',()=>{if(!activeContext)return;const explanation=document.getElementById('requestText').value.trim();if(!explanation){document.getElementById('requestMessage').textContent='Escreva uma breve descrição antes de enviar.';return;}const [type,...rest]=document.getElementById('requestItem').value.split(':');const value=rest.join(':');const labels={fixed:'Atividade fixa',variable:'Atividade variável',specialty:'Especialidade',badge:'Insígnia'};requests.unshift({id:String(Date.now())+Math.random().toString(16).slice(2),youth:activeContext.y,blockId:activeContext.b.id,blockName:activeContext.b.name,itemType:type,itemValue:value,itemLabel:`${labels[type]}${type==='fixed'||type==='variable'?' '+(Number(value)+1):': '+value}`,explanation,status:'pending',response:'',createdAt:new Date().toISOString()});saveRequests();resetRequestModal();render();});
 function updateRequestStatus(status){if(!activeRequest)return;const response=document.getElementById('requestResponse').value.trim();activeRequest.status=status;activeRequest.response=response;const b=BLOCKS.find(x=>x.id===activeRequest.blockId),s=cell(activeRequest.youth,b);if(status==='approved'){if(activeRequest.itemType==='fixed'){s.fixedStates[Number(activeRequest.itemValue)]='sim';s.fixed=s.fixedStates.every(v=>v==='sim')?'sim':'pendente';}else if(activeRequest.itemType==='variable'){const idx=Number(activeRequest.itemValue);while(s.variables.length<=idx)s.variables.push('pendente');s.variables[idx]='sim';s.qty=s.variables.filter(v=>v==='sim').length;}else if(activeRequest.itemType==='specialty'){s.specialty=activeRequest.itemValue;}else if(activeRequest.itemType==='badge'){s.badge=activeRequest.itemValue;}save();}saveRequests();resetRequestModal();render();}
 document.getElementById('approveRequest').addEventListener('click',()=>updateRequestStatus('approved'));document.getElementById('rejectRequest').addEventListener('click',()=>updateRequestStatus('rejected'));document.getElementById('questionRequest').addEventListener('click',()=>updateRequestStatus('question'));
-document.getElementById('authButton').addEventListener('click',()=>{if(canEdit){canEdit=false;document.body.classList.remove('editor');document.getElementById('authButton').textContent='Entrar para editar';render();}else{document.getElementById('authMessage').textContent='';document.getElementById('editPassword').value='';showModal('authPanel')}});
+document.getElementById('authButton').addEventListener('click',()=>{if(canEdit){canEdit=false;document.body.classList.remove('editor');document.getElementById('authButton').textContent='Entrar para editar';document.getElementById('rosterManager').classList.add('hidden');const mb=document.getElementById('manageYouthToggle');mb.setAttribute('aria-expanded','false');mb.textContent='Gerenciar jovens';render();}else{document.getElementById('authMessage').textContent='';document.getElementById('editPassword').value='';showModal('authPanel')}});
 document.getElementById('unlockEditing').addEventListener('click',()=>{if(document.getElementById('editPassword').value==='Ywy43'){canEdit=true;document.body.classList.add('editor');document.getElementById('authButton').textContent='Sair da edição';closeModal('authPanel');render();}else document.getElementById('authMessage').textContent='Senha incorreta.'});
 document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.close==='auth'?'authPanel':btn.dataset.close==='approved'?'approvedModal':btn.dataset.close==='consult'?'consultModal':btn.dataset.close==='itemChoice'?'itemChoiceModal':'requestModal')));
 
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const open=document.querySelector('.modal-overlay.open');if(!open)return;e.preventDefault();if(open.id==='requestModal')resetRequestModal();else closeModal(open.id)});
 function badgeOptions(b){return b.badges||[]}
 function axisFor(b){return AXES.find(a=>a.name===b.axis)||AXES[0]}
-function detailMode(){return document.getElementById("category").value!=="all"||itemBlock.value!=="all"||document.getElementById("itemType").value!=="any"||document.getElementById("markFilter").value!=="all"}
+function detailMode(){return itemBlock.value!=="all"||document.getElementById("itemType").value!=="any"||document.getElementById("markFilter").value!=="all"}
 function buildItemRows(){
  const query=document.getElementById("search").value.trim().toLocaleLowerCase("pt-BR");
- const cat=document.getElementById("category").value;
+ const cat="all";
  const selectedYouth=youthFilter.value, selectedBlock=itemBlock.value, selectedType=document.getElementById("itemType").value, selectedStatus=document.getElementById("markFilter").value;
  const rows=[];
  for(const y of YOUTHS){
@@ -428,7 +453,7 @@ function renderProgression(){
   const members=data.filter(d=>stageForBlocks(d.blocks).id===stage.id);
   const b=STAGE_BADGES[stage.key];
   const names=members.length?`<div class="youth-chips">${members.map(d=>`<button type="button" class="youth-chip" data-stage-youth="${esc(d.name)}" title="${d.blocks} de ${BLOCKS.length} blocos concluídos">${esc(d.name)} <span style="font-weight:600;color:#6c7c88">${d.blocks}/${BLOCKS.length}</span></button>`).join("")}</div>`:`<span class="no-youth">Nenhum jovem nesta etapa</span>`;
-  return `<tr><td><div class="stage-name"><div><img class="stage-badge" src="${b.src}" alt="${esc(b.alt)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="stage-fallback">${stage.name.replace('ESCOTEIRO DA PÁTRIA','EP')}</span></div><div><strong>${stage.name}</strong><div class="stage-range">${stage.range}</div></div></div></td><td class="stage-count">${members.length} jovem(ns)</td><td>${names}</td></tr>`;
+  return `<tr><td><div class="stage-name"><div><img class="stage-badge" src="${b.src}" alt="${esc(b.alt)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="stage-fallback">${({escalada:"ESC",conquista:"CON",azimute:"AZI",patria:"EP"})[stage.id]||""}</span></div><div><strong>${stage.name}</strong><div class="stage-range">${stage.range}</div></div></div></td><td class="stage-count">${members.length} jovem(ns)</td><td>${names}</td></tr>`;
  }).join("");
  root.innerHTML=`<div class="progression-head"><div class="progression-title" id="progressionTitle">Etapas de progressão da tropa</div><div class="progression-subtitle">A lista se atualiza automaticamente conforme os blocos ficam concluídos. Clique em um nome para filtrar e consultar as atividades daquele jovem. Critério visual definido para este mapa: Escalada (0–6), Conquista (7–11), Azimute (12–17) e meta Escoteiro da Pátria (18 blocos).</div></div><div class="stage-scroll"><table class="stage-table"><thead><tr><th>Etapa / distintivo</th><th>Jovens</th><th>Nomes associados à etapa</th></tr></thead><tbody>${rows}</tbody></table></div><div class="stage-legend">Os distintivos são carregados da página oficial dos <a href="https://www.escoteiros.org.br/ramo-senior/" target="_blank" rel="noopener">Escoteiros do Brasil</a>. Observação: a classificação acima é um critério de acompanhamento do mapa; o reconhecimento oficial Escoteiro da Pátria possui requisitos adicionais, como o Desafio do Azimute e avaliações previstas pelo programa.</div>`;
  root.querySelectorAll("[data-stage-youth]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -450,7 +475,7 @@ function render(){
   return;
  }
  results.classList.add("hidden");board.classList.remove("hidden");
- const query=document.getElementById("search").value.toLowerCase(),cat=document.getElementById("category").value;
+ const query=document.getElementById("search").value.toLowerCase(),cat="all";
  AXES.forEach(axis=>{
   let list=BLOCKS.filter(b=>b.axis===axis.name&&b.name.toLowerCase().includes(query));
   list=list.filter(b=>cat==="all"||(cat==="fixed"&&b.fixed)||(cat==="variable"&&b.varCount>0)||(cat==="special"&&(b.specialties.length||b.badges.length)));
@@ -509,16 +534,43 @@ function render(){
  document.getElementById("empty").classList.toggle("hidden",board.children.length>0);
  updateSummary()
 }
+
+let statsSort="axis";
+function renderStats(){
+  const root=document.getElementById("stats");if(!root)return;
+  const N=YOUTHS.length;
+  const rows=BLOCKS.map(b=>({b,axis:axisFor(b),done:YOUTHS.filter(y=>isBlockComplete(y,b))}));
+  const rowHtml=(r,dot)=>{
+   const n=r.done.length,pct=N?Math.round(n/N*100):0;
+   const tip=n?`Concluíram: ${r.done.join(", ")}`:"Nenhum jovem concluiu este bloco ainda";
+   const segs=Array.from({length:N},(_,i)=>i<n?`<span style="background:${r.axis.color}"></span>`:"<span></span>").join("");
+   return `<div class="stat-row" title="${esc(tip)}"><div class="stat-name">${dot?`<i class="dot" style="background:${r.axis.color}"></i>`:""}${esc(r.b.name.replace(/\s+/g," "))}</div><div class="stat-track" style="grid-template-columns:repeat(${N},minmax(0,1fr))">${segs}</div><div class="stat-val">${n}/${N}<small>${pct}%</small></div></div>`;
+  };
+  let body="";
+  if(statsSort==="rank"){
+   body=[...rows].sort((a,b)=>b.done.length-a.done.length||a.b.id-b.b.id).map(r=>rowHtml(r,true)).join("");
+  }else{
+   body=AXES.map(ax=>{
+    const list=rows.filter(r=>r.b.axis===ax.name);if(!list.length)return "";
+    const avg=N?Math.round(list.reduce((n,r)=>n+r.done.length,0)/(N*list.length)*100):0;
+    return `<div class="stats-axis"><i style="background:${ax.color}"></i>${esc(ax.name)}<em>média ${avg}%</em></div>`+list.map(r=>rowHtml(r,false)).join("");
+   }).join("");
+  }
+  root.innerHTML=`<div class="stats-head"><div><div class="stats-title" id="statsTitle">Blocos concluídos pela tropa</div><div class="stats-subtitle">Cada segmento da barra representa um jovem; os coloridos já concluíram o bloco. Passe o mouse sobre a linha para ver quem concluiu.</div></div><div class="stats-sort" role="group" aria-label="Ordenar blocos"><button type="button" data-stats-sort="axis" class="${statsSort==="axis"?"on":""}">Por eixo</button><button type="button" data-stats-sort="rank" class="${statsSort==="rank"?"on":""}">Mais concluídos</button></div></div><div class="stats-body">${body}</div>`;
+  root.querySelectorAll("[data-stats-sort]").forEach(btn=>btn.addEventListener("click",()=>{statsSort=btn.dataset.statsSort;renderStats();}));
+}
 function updateSummary(){
- let marks=0;
- YOUTHS.forEach(y=>BLOCKS.forEach(b=>{let s=cell(y,b);marks+=s.fixedStates.filter(v=>v==="sim").length;marks+=s.variables.filter(v=>v==="sim").length;if(s.specialty)marks++;if(s.badge)marks++}));
- const complete=YOUTHS.filter(y=>BLOCKS.every(b=>isBlockComplete(y,b))).length;
- document.getElementById("overall").textContent=`${complete}/${YOUTHS.length} jovens · ${marks} marcações`;
- document.getElementById("overallbar").style.width=(complete/YOUTHS.length*100)+"%";
- renderProgression();
+  const totalBlocks=YOUTHS.length*BLOCKS.length;
+  const doneBlocks=YOUTHS.reduce((n,y)=>n+countCompletedBlocks(y),0);
+  const pct=totalBlocks?doneBlocks/totalBlocks*100:0;
+  const overall=document.getElementById("overall");
+  overall.textContent=`${YOUTHS.length} ${YOUTHS.length===1?"jovem":"jovens"} · ${Math.round(pct)}% dos blocos concluídos`;
+  overall.title=`${doneBlocks} de ${totalBlocks} blocos concluídos (jovens × blocos)`;
+  document.getElementById("overallbar").style.width=pct+"%";
+  renderProgression();
+  renderStats();
 }
 document.getElementById("search").addEventListener("input",render);
-document.getElementById("category").addEventListener("change",render);
 youthFilter.addEventListener("change",render);itemBlock.addEventListener("change",render);document.getElementById("itemType").addEventListener("change",render);document.getElementById("markFilter").addEventListener("change",render);
 document.getElementById("manageYouthToggle").addEventListener("click",()=>{
  const panel=document.getElementById("rosterManager"),btn=document.getElementById("manageYouthToggle");
@@ -529,8 +581,12 @@ document.getElementById("addYouthForm").addEventListener("submit",e=>{e.preventD
 document.getElementById("youthManagerList").addEventListener("change",e=>{const inp=e.target.closest("input[data-edit-youth]");if(inp)renameYouth(inp.dataset.editYouth,inp.value);});
 document.getElementById("youthManagerList").addEventListener("keydown",e=>{const inp=e.target.closest("input[data-edit-youth]");if(inp&&e.key==="Enter"){e.preventDefault();inp.blur();}});
 document.getElementById("youthManagerList").addEventListener("click",e=>{const btn=e.target.closest("button[data-remove-youth]");if(btn)removeYouth(btn.dataset.removeYouth);});
-document.getElementById("clearFilters").addEventListener("click",()=>{document.getElementById("search").value="";document.getElementById("category").value="all";youthFilter.value="all";itemBlock.value="all";document.getElementById("itemType").value="any";document.getElementById("markFilter").value="all";render()});
+document.getElementById("clearFilters").addEventListener("click",()=>{document.getElementById("search").value="";youthFilter.value="all";itemBlock.value="all";document.getElementById("itemType").value="any";document.getElementById("markFilter").value="all";render()});
 document.getElementById("groupName").addEventListener("input",()=>{try{localStorage.setItem("mapa-senior-group",document.getElementById("groupName").value)}catch(e){}});
+async function saveFile(name,text,mime){
+  try{const dl=(window.claude&&window.claude.use)?await window.claude.use("downloads"):null;if(dl){await dl.save({filename:name,data:text});return;}}catch(e){if(e&&e.code==="declined")return;}
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 document.getElementById("export").addEventListener("click",()=>{
  const rows=[];
  const flatHeaders=BLOCKS.flatMap(b=>[b.axis,b.axis,b.axis,b.axis]);
@@ -555,10 +611,10 @@ document.getElementById("export").addEventListener("click",()=>{
   rows.push(row);
  });
  const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\r\n");
- const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="mapa-senior-matriz.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ saveFile("mapa-senior-matriz.csv","\ufeff"+csv,"text/csv;charset=utf-8");
 });
 document.getElementById("savecopy").addEventListener("click",()=>{
- let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({group:document.getElementById("groupName").value,youths:YOUTHS,state},null,2)],{type:"application/json"}));a.download="mapa-senior-dados.json";a.click();URL.revokeObjectURL(a.href)
+ saveFile("mapa-senior-dados.json",JSON.stringify({group:document.getElementById("groupName").value,youths:YOUTHS,state},null,2),"application/json")
 });
 let savedGroup="";try{savedGroup=localStorage.getItem("mapa-senior-group")||""}catch(e){}if(savedGroup)document.getElementById("groupName").value=savedGroup;
 renderRosterManager();
