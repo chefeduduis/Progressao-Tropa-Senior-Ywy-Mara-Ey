@@ -764,17 +764,31 @@ let savedGroup="";try{savedGroup=localStorage.getItem("mapa-senior-group")||""}c
 // Sincronização compartilhada Supabase (fonte comum para todos os dispositivos).
 const SB_URL="https://ztlgllwjvfewdjlyyitv.supabase.co";
 const SB_KEY="sb_publishable_uSUZ3gMVXwokEb2qx9aiCg_-KO9CVYz";
-let cloudReady=false,cloudTimer=null,cloudApplying=false,cloudSaving=false,cloudDirty=false,cloudBase=null;
-async function sbFetch(path,options={}){const res=await fetch(SB_URL+"/rest/v1/"+path,{...options,headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json",Prefer:"return=representation",...(options.headers||{})}});if(!res.ok)throw new Error("Supabase "+res.status+" "+(await res.text()).slice(0,180));return res.status===204?null:res.json();}
+let cloudReady=false,cloudTimer=null,cloudApplying=false,cloudSaving=false,cloudDirty=false;
+let cloudSyncing=false,cloudLocalVersion=0,cloudBase=null,cloudYouthBase=null;
+let cloudRequestsDirty=false,cloudRequestsSaving=false,cloudRequestIds=new Set();
 
-// Mescla somente os campos alterados neste dispositivo sobre a versão mais recente da nuvem.
+async function sbFetch(path,options={}){
+  const res=await fetch(SB_URL+"/rest/v1/"+path,{
+    ...options,
+    headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json",
+      Prefer:"return=representation",...(options.headers||{})}
+  });
+  if(!res.ok)throw new Error("Supabase "+res.status+" "+(await res.text()).slice(0,220));
+  return res.status===204?null:res.json();
+}
+
+// Mescla alterações locais sobre a versão remota, preservando alterações de outros dispositivos.
 function mergeCloudValue(base,local,remote){
   if(Array.isArray(local)){
     const out=Array.isArray(remote)?remote.slice():[];
     const old=Array.isArray(base)?base:[];
-    for(let i=0;i<local.length;i++){
-      if(i>=old.length || JSON.stringify(local[i])!==JSON.stringify(old[i])){
-        out[i]=mergeCloudValue(old[i],local[i],out[i]);
+    const max=Math.max(local.length,old.length);
+    for(let i=0;i<max;i++){
+      const had=i<old.length, has=i<local.length;
+      if(!has){ if(had && JSON.stringify(old[i])!==JSON.stringify(undefined)) out.splice(i,1); continue; }
+      if(!had || JSON.stringify(local[i])!==JSON.stringify(old[i])){
+        out[i]=mergeCloudValue(had?old[i]:undefined,local[i],out[i]);
       }
     }
     return out;
@@ -782,6 +796,9 @@ function mergeCloudValue(base,local,remote){
   if(local && typeof local==="object"){
     const out=remote&&typeof remote==="object"&&!Array.isArray(remote)?{...remote}:{};
     const old=base&&typeof base==="object"&&!Array.isArray(base)?base:{};
+    for(const k of Object.keys(old)){
+      if(!(k in local) && JSON.stringify(old[k])!==JSON.stringify(undefined)) delete out[k];
+    }
     for(const k of Object.keys(local)){
       if(!(k in old) || JSON.stringify(local[k])!==JSON.stringify(old[k])){
         out[k]=mergeCloudValue(old[k],local[k],out[k]);
@@ -792,22 +809,35 @@ function mergeCloudValue(base,local,remote){
   return JSON.stringify(local)===JSON.stringify(base)?remote:local;
 }
 
+function saveCloud(){
+  cloudLocalVersion++;
+  if(!cloudReady){cloudDirty=true;return;}
+  if(cloudApplying)return;
+  cloudDirty=true;
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(()=>{cloudTimer=null;writeCloudSafely();},450);
+}
+
 async function writeCloudSafely(){
   if(!cloudReady||cloudApplying||cloudSaving||!cloudDirty)return;
   cloudSaving=true;
   try{
-    for(let attempt=0;attempt<5;attempt++){
+    for(let attempt=0;attempt<8;attempt++){
       const rows=await sbFetch("mapa_senior_data?id=eq.1&select=*");
       if(!rows||!rows.length)throw new Error("Registro compartilhado id=1 não encontrado.");
-      const row=rows[0],base=cloudBase||row.progress||{},local=JSON.parse(JSON.stringify(state));
-      const merged=mergeCloudValue(base,local,row.progress||{});
+      const row=rows[0];
+      const localVersionAtRead=cloudLocalVersion;
+      const localState=JSON.parse(JSON.stringify(state));
+      const localYouths=JSON.parse(JSON.stringify(YOUTHS));
+      const merged=mergeCloudValue(cloudBase,localState,row.progress||{});
+      const mergedYouths=mergeCloudValue(cloudYouthBase,localYouths,row.youths||[]);
       const filter=row.updated_at
         ? "mapa_senior_data?id=eq.1&updated_at=eq."+encodeURIComponent(row.updated_at)
         : "mapa_senior_data?id=eq.1&updated_at=is.null";
       const result=await sbFetch(filter,{
         method:"PATCH",
         body:JSON.stringify({
-          youths:mergeCloudValue(cloudBase?cloudBase.__youths:row.youths,YOUTHS,row.youths||YOUTHS),
+          youths:mergedYouths,
           progress:merged,
           group_name:document.getElementById("groupName").value,
           updated_at:new Date().toISOString()
@@ -815,73 +845,137 @@ async function writeCloudSafely(){
       });
       if(result&&result.length){
         cloudBase=JSON.parse(JSON.stringify(merged));
-        cloudBase.__youths=JSON.parse(JSON.stringify(YOUTHS));
-        state=merged;
-        cloudDirty=false;
-        try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
-        render();
+        cloudYouthBase=JSON.parse(JSON.stringify(mergedYouths));
+        if(cloudLocalVersion===localVersionAtRead){
+          state=merged;
+          YOUTHS=mergedYouths;
+          cloudDirty=false;
+          try{localStorage.setItem(KEY,JSON.stringify(state));localStorage.setItem("mapa-senior-youths-import-v8",JSON.stringify(YOUTHS));}catch(e){}
+          populateYouthFilter("all");render();
+        }else{
+          // Houve outra edição enquanto a gravação estava em andamento: não descarta a edição mais nova.
+          cloudDirty=true;
+        }
         return;
       }
-      // Outro dispositivo gravou primeiro; tenta novamente usando a versão recém-atualizada.
+      // A versão remota mudou antes do PATCH; relê e tenta mesclar novamente.
     }
-    throw new Error("Muitas alterações simultâneas. Tente novamente.");
+    throw new Error("Conflito contínuo de gravação entre dispositivos.");
   }catch(e){
-    console.warn("Falha ao sincronizar dados:",e);
-    undoToast("Não foi possível sincronizar agora — tente novamente");
+    console.error("Falha ao sincronizar dados:",e);
+    undoToast("Falha ao salvar na nuvem — mantenha esta aba aberta e tente novamente");
   }finally{
     cloudSaving=false;
-    if(cloudDirty && !cloudTimer){
-      cloudTimer=setTimeout(()=>{cloudTimer=null;writeCloudSafely();},900);
-    }
+    if(cloudDirty&&!cloudTimer)cloudTimer=setTimeout(()=>{cloudTimer=null;writeCloudSafely();},900);
   }
 }
-function saveCloud(){
-  if(!cloudReady||cloudApplying)return;
-  cloudDirty=true;
-  clearTimeout(cloudTimer);
-  cloudTimer=setTimeout(()=>{cloudTimer=null;writeCloudSafely();},500);
-}
-async function saveCloudRequests(){if(!cloudReady||cloudApplying)return;try{localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests));const valid=requests.filter(r=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(r.id));if(valid.length)await sbFetch("mapa_senior_requests?on_conflict=id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(valid.map(r=>({id:r.id,youth_name:r.youth,block_id:String(r.blockId),item_type:r.itemType,item_name:r.itemLabel,justification:r.explanation,status:r.status,response:r.response||"",created_at:r.createdAt,updated_at:new Date().toISOString()})))});}catch(e){console.warn("Solicitações não sincronizadas na nuvem (verifique se a tabela mapa_senior_requests existe):",e);}}
 
-async function syncCloud(){
-  if(cloudApplying||cloudSaving||cloudDirty)return;
+async function saveCloudRequests(){
+  if(!cloudReady||cloudApplying)return;
+  cloudRequestsDirty=true;
+  if(cloudRequestsSaving)return;
+  cloudRequestsSaving=true;
   try{
-    const rows=await sbFetch("mapa_senior_data?id=eq.1&select=*");
-    if(rows&&rows.length){
-      const row=rows[0];
-      cloudApplying=true;
-      if(row.progress&&typeof row.progress==="object"){
-        state=row.progress;
-        cloudBase=JSON.parse(JSON.stringify(row.progress));
-        cloudBase.__youths=JSON.parse(JSON.stringify(row.youths||YOUTHS));
+    while(cloudRequestsDirty){
+      cloudRequestsDirty=false;
+      const valid=requests.filter(r=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(r.id));
+      const currentIds=new Set(valid.map(r=>r.id));
+      const removed=[...cloudRequestIds].filter(id=>!currentIds.has(id));
+      // Exclusões também são enviadas à nuvem; sem isso, o próximo polling ressuscita os registros apagados.
+      for(const id of removed){
+        await sbFetch("mapa_senior_requests?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:{Prefer:"return=minimal"}});
+        cloudRequestIds.delete(id);
       }
-      if(Array.isArray(row.youths)&&row.youths.length)YOUTHS=row.youths;
-      if(row.group_name)document.getElementById("groupName").value=row.group_name;
-      try{
-        localStorage.setItem(KEY,JSON.stringify(state));
-        localStorage.setItem("mapa-senior-youths-import-v8",JSON.stringify(YOUTHS));
-      }catch(e){}
-      try{
-        const remote=await sbFetch("mapa_senior_requests?select=*&order=created_at.desc");
-        if(Array.isArray(remote)&&remote.length){
-          requests=remote.map(r=>({id:r.id,youth:r.youth_name,blockId:Number(r.block_id),blockName:(BLOCKS.find(b=>b.id===Number(r.block_id))||{}).name||"",itemType:r.item_type,itemValue:"",itemLabel:r.item_name,explanation:r.justification||"",status:r.status,response:r.response||"",createdAt:r.created_at}));
-          localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests));
-        }
-      }catch(e){console.warn("Tabela de solicitações indisponível:",e);}
-      cloudReady=true;
-      populateYouthFilter("all");
-      render();
-    }else{
-      cloudApplying=true;
-      await sbFetch("mapa_senior_data",{method:"POST",body:JSON.stringify({id:1,youths:YOUTHS,progress:state,group_name:document.getElementById("groupName").value,updated_at:new Date().toISOString()})});
-      cloudBase=JSON.parse(JSON.stringify(state));
-      cloudBase.__youths=JSON.parse(JSON.stringify(YOUTHS));
-      cloudReady=true;
+      if(valid.length){
+        await sbFetch("mapa_senior_requests?on_conflict=id",{
+          method:"POST",
+          headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+          body:JSON.stringify(valid.map(r=>({
+            id:r.id,youth_name:r.youth,block_id:String(r.blockId),item_type:r.itemType,
+            item_name:r.itemLabel,justification:r.explanation,status:r.status,
+            response:r.response||"",created_at:r.createdAt,updated_at:new Date().toISOString()
+          })))
+        });
+      }
+      cloudRequestIds=currentIds;
+      try{localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests));}catch(e){}
     }
   }catch(e){
+    console.warn("Solicitações não sincronizadas na nuvem:",e);
+    cloudRequestsDirty=true;
+    undoToast("Falha ao sincronizar solicitações — tente novamente");
+  }finally{
+    cloudRequestsSaving=false;
+    if(cloudRequestsDirty)setTimeout(saveCloudRequests,800);
+  }
+}
+
+async function syncCloud(){
+  if(cloudSyncing||cloudApplying||cloudSaving||cloudDirty||cloudRequestsSaving||cloudRequestsDirty)return;
+  cloudSyncing=true;
+  const versionAtStart=cloudLocalVersion;
+  try{
+    const rows=await sbFetch("mapa_senior_data?id=eq.1&select=*");
+    if(!rows||!rows.length){
+      cloudApplying=true;
+      await sbFetch("mapa_senior_data",{method:"POST",body:JSON.stringify({
+        id:1,youths:YOUTHS,progress:state,group_name:document.getElementById("groupName").value,
+        updated_at:new Date().toISOString()
+      })});
+      cloudBase=JSON.parse(JSON.stringify(state));
+      cloudYouthBase=JSON.parse(JSON.stringify(YOUTHS));
+      cloudReady=true;
+      return;
+    }
+    const row=rows[0];
+    let remoteRequests=null;
+    try{remoteRequests=await sbFetch("mapa_senior_requests?select=*&order=created_at.desc");}
+    catch(e){console.warn("Tabela de solicitações indisponível:",e);}
+
+    // Se houve edição durante a consulta inicial, usa o snapshot remoto apenas como base
+    // de comparação e preserva a edição local para enviá-la em seguida.
+    if(cloudLocalVersion!==versionAtStart || cloudDirty){
+      cloudBase=JSON.parse(JSON.stringify(row.progress||{}));
+      cloudYouthBase=JSON.parse(JSON.stringify(row.youths||[]));
+      cloudReady=true;
+      return;
+    }
+    cloudApplying=true;
+    if(row.progress&&typeof row.progress==="object"){
+      state=row.progress;
+      cloudBase=JSON.parse(JSON.stringify(row.progress));
+    }
+    if(Array.isArray(row.youths)&&row.youths.length){
+      YOUTHS=row.youths;
+      cloudYouthBase=JSON.parse(JSON.stringify(row.youths));
+    }
+    if(row.group_name)document.getElementById("groupName").value=row.group_name;
+    try{
+      localStorage.setItem(KEY,JSON.stringify(state));
+      localStorage.setItem("mapa-senior-youths-import-v8",JSON.stringify(YOUTHS));
+    }catch(e){}
+    // Uma lista vazia também é um estado válido: limpa solicitações apagadas em outros dispositivos.
+    if(Array.isArray(remoteRequests)){
+      requests=remoteRequests.map(r=>({
+        id:r.id,youth:r.youth_name,blockId:Number(r.block_id),
+        blockName:(BLOCKS.find(b=>b.id===Number(r.block_id))||{}).name||"",
+        itemType:r.item_type,itemValue:"",itemLabel:r.item_name,
+        explanation:r.justification||"",status:r.status,response:r.response||"",createdAt:r.created_at
+      }));
+      cloudRequestIds=new Set(requests.map(r=>r.id));
+      try{localStorage.setItem("mapa-senior-requests-import-v8",JSON.stringify(requests));}catch(e){}
+    }
+    cloudReady=true;
+    populateYouthFilter("all");
+    render();
+  }catch(e){
     console.error("Sincronização Supabase:",e);
-    undoToast("Sem conexão com a nuvem — usando dados locais");
-  }finally{cloudApplying=false;}
+    undoToast("Sem conexão com a nuvem — dados locais preservados");
+  }finally{
+    cloudApplying=false;
+    cloudSyncing=false;
+    if(cloudDirty&&!cloudTimer)cloudTimer=setTimeout(()=>{cloudTimer=null;writeCloudSafely();},500);
+  }
 }
 window.addEventListener("online",()=>{if(!cloudReady)syncCloud();else saveCloud();});
 
@@ -890,9 +984,9 @@ window.addEventListener("resize",()=>{clearTimeout(window.__mapaResizeTimer);win
 // Inicia a leitura da base compartilhada e atualiza mudanças feitas em outros dispositivos.
 syncCloud();
 setInterval(()=>{
-  if(document.visibilityState==="visible" && !cloudApplying && !cloudSaving && !cloudDirty && !cloudTimer) syncCloud();
+  if(document.visibilityState==="visible" && !cloudApplying && !cloudSyncing && !cloudSaving && !cloudDirty && !cloudTimer && !cloudRequestsDirty && !cloudRequestsSaving) syncCloud();
 },7000);
-window.addEventListener("focus",()=>{if(!cloudApplying && !cloudSaving && !cloudDirty && !cloudTimer) syncCloud();});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible" && !cloudApplying && !cloudSaving && !cloudDirty && !cloudTimer) syncCloud();});
+window.addEventListener("focus",()=>{if(!cloudApplying && !cloudSyncing && !cloudSaving && !cloudDirty && !cloudTimer && !cloudRequestsDirty && !cloudRequestsSaving) syncCloud();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible" && !cloudApplying && !cloudSyncing && !cloudSaving && !cloudDirty && !cloudTimer && !cloudRequestsDirty && !cloudRequestsSaving) syncCloud();});
 render();
 </script></body></html>
