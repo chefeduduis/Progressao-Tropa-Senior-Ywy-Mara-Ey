@@ -704,33 +704,53 @@ async function saveFile(name,text,mime){
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function buildExportTableHtml(){
- const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+ const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
  const axisColors={"Habilidades para a vida":"#e5f0fb","Saúde e Bem-Estar":"#e8f4ed","Paz e Desenvolvimento":"#fff3d9","Meio Ambiente":"#e8f3e8"};
  let body="";
- YOUTHS.forEach((y,yi)=>{
-  body+=`<tr><td colspan="6" class="youth-title">${esc(y)}</td></tr>`;
-  body+=`<tr class="col-head"><th>Bloco</th><th>Eixo</th><th>Atividades fixas</th><th>Atividades variáveis</th><th>Especialidade / Insígnia</th><th>Situação</th></tr>`;
+ YOUTHS.forEach(y=>{
+  body+=`<section class="youth-section"><h2 class="youth-title">${esc(y)}</h2><div class="block-grid">`;
   BLOCKS.forEach(b=>{
    const s=cell(y,b),fixes=fixedItems(b),vars=variableItems(b);
    const fixedDone=s.fixedStates.filter(v=>v==="sim").length;
    const varDone=s.variables.filter(v=>v==="sim").length;
-   const fixedValue=fixes.length?`${fixedDone} de ${fixes.length} concluídas`:"Não se aplica";
-   const varValue=(Number(b.varCount)||0)>0?`${varDone} de ${b.varCount} mínimas (${vars.length} opções)`:"Não se aplica";
-   const extra=[s.specialty?`Especialidade: ${s.specialty}`:"",s.badge?`Insígnia: ${s.badge}`:""].filter(Boolean).join("<br>")||"—";
+   const fixedTotal=fixes.length;
+   const varTotal=Math.max(0,Number(b.varCount)||0);
+   const fixedValue=fixedTotal?`${fixedDone}/${fixedTotal}`:"—";
+   const varValue=varTotal?`${Math.min(varDone,varTotal)}/${varTotal}`:"—";
+   const extra=[s.specialty?`Especialidade: ${esc(s.specialty)}`:"",s.badge?`Insígnia: ${esc(s.badge)}`:""].filter(Boolean).join("<br>")||"—";
    const done=isBlockComplete(y,b);
    const axis=esc(b.axis||"");
    const bg=axisColors[b.axis]||"#edf2f5";
-   body+=`<tr class="data-row"><td class="block-name">${esc(b.name)}</td><td><span class="axis" style="background:${bg}">${axis}</span></td><td>${esc(fixedValue)}</td><td>${esc(varValue)}</td><td>${extra}</td><td><span class="status ${done?"done":"pending"}">${done?"Concluído":"Em andamento"}</span></td></tr>`;
+   const notes=Array.isArray(youthNotes[noteKey(y,b)])?youthNotes[noteKey(y,b)]:[];
+   const notesHtml=notes.length?notes.map(n=>`<div class="note-line"><span class="note-date">${esc(n.createdAt?new Date(n.createdAt).toLocaleString("pt-BR"):"")}</span>${esc(n.text||"")}</div>`).join(""):'<span class="muted">Nenhuma anotação registrada.</span>';
+   const blockRequests=requests.filter(r=>r.youth===y&&Number(r.blockId)===Number(b.id)).sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+   const requestStatus={pending:"Aguardando validação",question:"Aguardando esclarecimento",approved:"Aprovada",rejected:"Não aprovada"};
+   const requestsHtml=blockRequests.length?blockRequests.map(r=>`<div class="note-line"><b>${esc(r.itemLabel||"Solicitação")}</b> · <span class="request-status ${esc(r.status||"pending")}">${esc(requestStatus[r.status]||r.status||"Sem status")}</span>${r.explanation?`<div>${esc(r.explanation)}</div>`:""}${r.response?`<div><b>Resposta:</b> ${esc(r.response)}</div>`:""}<span class="note-date">${esc(r.createdAt?new Date(r.createdAt).toLocaleString("pt-BR"):"")}</span></div>`).join(""):'<span class="muted">Nenhuma solicitação registrada.</span>';
+   body+=`<article class="block-card" style="--axis-bg:${bg}">
+    <div class="axis-row">${axis}</div>
+    <div class="block-row"><strong>${esc(b.name)}</strong><span class="block-status ${done?"done":"pending"}">${done?"Concluído":"Em andamento"}</span></div>
+    <div class="metrics">
+     <div class="metric"><span class="metric-label">Atividades fixas</span><strong class="metric-value ${fixedTotal>0&&fixedDone>=fixedTotal?"done-text":""}">${fixedValue}</strong></div>
+     <div class="metric"><span class="metric-label">Atividades variáveis</span><strong class="metric-value ${varTotal>0&&varDone>=varTotal?"done-text":""}">${varValue}</strong></div>
+    </div>
+    <div class="extra">${extra}</div>
+    <div class="notes"><strong>Histórico de anotações</strong>${notesHtml}<div class="history-divider"></div><strong>Histórico de solicitações</strong>${requestsHtml}</div>
+   </article>`;
   });
-  if(yi<YOUTHS.length-1)body+=`<tr><td colspan="6" class="spacer-row"></td></tr>`;
+  body+='</div></section>';
  });
  const title=esc(document.getElementById("groupName").value||"Mapa Sênior");
  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
- @page{size:landscape;margin:1.2cm}body{font-family:Arial,sans-serif;background:#f5f8fa;color:#263b49;margin:22px;font-size:10pt}
- .top{background:#183348;color:#fff;padding:18px 20px;border-radius:10px;margin-bottom:16px}.top h1{font-size:20pt;margin:0 0 5px}.top p{margin:0;color:#d7e5ed;font-size:10pt}
- table{width:100%;border-collapse:separate;border-spacing:0 3px;table-layout:fixed}th,td{padding:8px 10px;border:1px solid #dce5ea;vertical-align:middle}th{font-size:9pt;text-align:left;color:#fff;background:#31566d}.col-head th:first-child{border-radius:7px 0 0 7px}.col-head th:last-child{border-radius:0 7px 7px 0}
- .youth-title td{background:#e4edf3;color:#183348;font-size:13pt;font-weight:bold;border:1px solid #c9d8e1;border-radius:8px;padding:11px 13px}.data-row td{background:#fff}.data-row:nth-child(even) td{background:#f8fafb}.block-name{font-weight:bold;color:#183348;white-space:nowrap}.axis{display:inline-block;padding:5px 8px;border-radius:6px;color:#29485d;font-weight:bold;font-size:9pt}.status{display:inline-block;padding:5px 9px;border-radius:6px;font-weight:bold;white-space:nowrap}.status.done{background:#e2f2e6;color:#28613b;border:1px solid #b9ddc2}.status.pending{background:#fff4d5;color:#80620b;border:1px solid #ead89b}.spacer-row td{height:9px;border:0;background:transparent;padding:0}
- </style></head><body><div class="top"><h1>Mapa Sênior</h1><p>${title} · Relatório de progressão por jovem e bloco</p></div><table><colgroup><col style="width:13%"><col style="width:18%"><col style="width:17%"><col style="width:19%"><col style="width:21%"><col style="width:12%"></colgroup>${body}</table></body></html>`;
+ @page{size:portrait;margin:1.1cm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f5f8fa;color:#263b49;margin:18px;font-size:10pt}
+ .top{background:#183348;color:#fff;padding:17px 19px;border-radius:11px;margin-bottom:18px}.top h1{font-size:20pt;margin:0 0 5px}.top p{margin:0;color:#d7e5ed;font-size:10pt}
+ .youth-section{margin:0 0 22px;page-break-inside:avoid}.youth-title{background:#e4edf3;color:#183348;font-size:14pt;margin:0 0 10px;padding:10px 13px;border:1px solid #c9d8e1;border-radius:9px}
+ .block-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.block-card{background:var(--axis-bg);border:1px solid #cbd9df;border-radius:10px;padding:0 11px 10px;break-inside:avoid;overflow:hidden}
+ .axis-row{margin:0 -11px 0;padding:7px 11px;background:var(--axis-bg);border-bottom:1px solid #cbd9df;color:#29485d;font-weight:bold;font-size:9pt;min-height:29px}
+ .block-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0 8px;border-bottom:1px solid #d5e0e4;color:#183348}.block-row strong{font-size:11pt}.block-status{font-size:8pt;font-weight:bold;padding:4px 7px;border-radius:6px;white-space:nowrap}.block-status.done{background:#dff1e4;color:#28613b;border:1px solid #b9ddc2}.block-status.pending{background:#fff4d5;color:#80620b;border:1px solid #ead89b}
+ .metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:9px 0}.metric{background:rgba(255,255,255,.72);border:1px solid rgba(110,140,155,.22);border-radius:7px;padding:7px 8px;display:flex;align-items:center;justify-content:space-between;gap:5px}.metric-label{font-size:8pt;color:#526875}.metric-value{font-size:11pt;color:#29485d}.done-text{color:#28613b}
+ .extra{background:rgba(255,255,255,.58);border-radius:6px;padding:7px 8px;font-size:8.5pt;line-height:1.45;min-height:30px}.notes{grid-column:1/-1;margin-top:8px;padding:8px;background:rgba(255,255,255,.72);border:1px solid rgba(110,140,155,.22);border-radius:7px;font-size:8pt;line-height:1.4}.notes>strong{display:block;color:#29485d;margin:2px 0 4px;font-size:8.5pt}.note-line{padding:3px 0;border-top:1px solid #e4eaed;white-space:pre-wrap;overflow-wrap:anywhere}.note-date{color:#6a7e88;font-size:7.5pt;margin-right:6px}.history-divider{border-top:1px solid #cbd9df;margin:7px 0}.request-status{font-weight:bold;color:#526875}.request-status.approved{color:#28613b}.request-status.rejected{color:#8b3434}.request-status.question{color:#315d87}.muted{color:#82919a;font-style:italic}
+ @media print{body{background:#fff;margin:0}.block-grid{gap:8px}.youth-section{page-break-inside:auto}.block-card{page-break-inside:avoid}}
+ </style></head><body><div class="top"><h1>Mapa Sênior</h1><p>${title} · Relatório de progressão por jovem e bloco</p></div>${body}</body></html>`;
 }
 document.getElementById("exportTable").addEventListener("click",()=>{
  const html=buildExportTableHtml();
@@ -754,5 +774,12 @@ window.addEventListener("online",()=>{if(!cloudReady)syncCloud();else saveCloud(
 
 renderRosterManager();
 window.addEventListener("resize",()=>{clearTimeout(window.__mapaResizeTimer);window.__mapaResizeTimer=setTimeout(render,120)});
+// Inicia a leitura da base compartilhada e atualiza mudanças feitas em outros dispositivos.
+syncCloud();
+setInterval(()=>{
+  if(document.visibilityState==="visible" && !cloudApplying && !cloudTimer) syncCloud();
+},5000);
+window.addEventListener("focus",()=>{if(!cloudApplying && !cloudTimer) syncCloud();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible" && !cloudApplying && !cloudTimer) syncCloud();});
 render();
 </script></body></html>
